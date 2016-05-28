@@ -1,0 +1,6 @@
+#!/bin/bash
+
+read -p "RECIPIENT > " && RECIPIENT=$REPLY
+read -p "CALLERID > " && CALLERID=$REPLY
+read -p "MESSAGE > " && MESSAGE=$REPLY
+echo $MESSAGE | ./twilio-sms -c .twiliorc -d $CALLERID $RECIPIENT
