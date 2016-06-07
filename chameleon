@@ -1,6 +1,44 @@
 #!/bin/bash
 
-read -p "RECIPIENT > " && RECIPIENT=$REPLY
-read -p "CALLERID > " && CALLERID=$REPLY
+while ! [[ $RECIPIENT =~ ^-?[0-9]+$ ]] || [[ $REC_VALID != true ]]; do
+  if [[ $RECIPIENT == 44* ]] && [ `echo ${#RECIPIENT}` -eq 12 ] && [[ $RECIPIENT =~ ^-?[0-9]+$ ]]; then
+    REC_VALID=true
+    break;
+  elif [[ $RECIPIENT == 0* ]] && [ `echo ${#RECIPIENT}` -eq 11 ] && [[ $RECIPIENT =~ ^-?[0-9]+$ ]]; then
+    RECIPIENT="44"${RECIPIENT:0-10}
+    REC_VALID=true
+    break;
+  fi
+  read -p "RECIPIENT > " && RECIPIENT=$REPLY;
+done
+
+
+while [[ $CID_VALID != true ]]; do
+  if [[ $CALLERID =~ ^-?[0-9]+$ ]]; then
+    if [[ $CALLERID == 44* ]] && [ `echo ${#CALLERID}` -eq 12 ]; then
+      # TODO: number validation
+      CID_VALID=true
+      break;
+    elif [[ $CALLERID == 0* ]] && [ `echo ${#CALLERID}` -eq 11 ]; then
+      CALLERID="44"${CALLERID:0-10}
+      # TODO: number validiation
+      CID_VALID=true
+      break;
+    fi
+  fi
+  
+  if [[ $CALLERID =~ ^-?[A-Za-z0-9]+$ ]]; then
+    if [ `echo ${#CALLERID}` -ge 1 ] && [ `echo ${#CALLERID}` -le 11 ]; then
+      if ! [[ $CALLERID =~ ^-?[0-9]+$ ]]; then
+        CID_VALID=true
+        break;
+      fi
+      CID_VALID=true
+    fi
+  fi
+
+  read -p "CALLERID > " && CALLERID=$REPLY
+done
+
 read -p "MESSAGE > " && MESSAGE=$REPLY
 echo $MESSAGE | ./twilio-sms -c .twiliorc -d $CALLERID $RECIPIENT
